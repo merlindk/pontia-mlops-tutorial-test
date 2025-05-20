@@ -1,0 +1,6 @@
+scikit-learn
+pandas
+joblib
+mlflow
+azure-storage-blob
+azure-identity
