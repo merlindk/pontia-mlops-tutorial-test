@@ -4,3 +4,4 @@ joblib
 mlflow
 azure-storage-blob
 azure-identity
+pytest

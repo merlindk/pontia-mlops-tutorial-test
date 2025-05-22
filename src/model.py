@@ -1,8 +1,11 @@
 from sklearn.ensemble import RandomForestClassifier
-import joblib
+import logging
+
+logger=logging.getLogger("adult-income")
 
 def train_model(X_train, y_train):
-    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    logger.info("Training RandomForestClassifier...")
+    model = RandomForestClassifier(random_state=42)
+    logger.info(f"Model parameters: {model.get_params()}")
     model.fit(X_train, y_train)
-    joblib.dump(model, "models/model.pkl")
     return model
