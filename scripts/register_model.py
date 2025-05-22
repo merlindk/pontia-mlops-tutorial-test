@@ -1,7 +1,7 @@
 import mlflow
 from mlflow.tracking import MlflowClient
 import os
-import datetime
+from datetime import datetime
 from pathlib import Path
 
 # Set the tracking URI if it's not the default

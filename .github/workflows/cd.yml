@@ -12,7 +12,11 @@ jobs:
   deliver:
     if: "!contains(github.event.head_commit.message, 'CD: update model artifact')"
     runs-on: ubuntu-latest
-
+    env:
+      AZURE_STORAGE_CONNECTION_STRING: ${{secrets.AZURE_STORAGE_CONNECTION_STRING}}
+      EXPERIMENT_NAME: ${{vars.EXPERIMENT_NAME}}
+      MLFLOW_URL: ${{vars.MLFLOW_URL}}
+      MODEL_NAME: "test_model"
     steps:
       - name: Generate RUN_ID
         run: echo "RUN_ID=run-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
@@ -36,11 +40,6 @@ jobs:
           curl -o data/raw/adult.test https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test
       
       - name: Train and save model
-        env:
-          AZURE_STORAGE_CONNECTION_STRING: ${{secrets.AZURE_STORAGE_CONNECTION_STRING}}
-          EXPERIMENT_NAME: ${{vars.EXPERIMENT_NAME}}
-          MLFLOW_URL: ${{vars.MLFLOW_URL}}
-          MODEL_NAME: "test_model"
         run: |
           python src/train.py
           
