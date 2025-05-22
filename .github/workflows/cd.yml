@@ -27,31 +27,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Download Adult dataset
+        run: |
+          curl -o data/raw/adult.data https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data
+          curl -o data/raw/adult.test https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test
+      
       - name: Train and save model
+        env:
+          AZURE_STORAGE_CONNECTION_STRING: ${{secrets.AZURE_STORAGE_CONNECTION_STRING}}
+          EXPERIMENT_NAME: ${{vars.EXPERIMENT_NAME}}
+          MLFLOW_URL: ${{vars.MLFLOW_URL}}
         run: |
-          python model/train.py
-          python -c "import joblib; import model.train as t; X_train, X_test, y_train, y_test = t.load_data(); m = t.train_model(X_train, y_train); joblib.dump(m, 'model.joblib')"
+          python src/train.py
 
-      - name: Upload model artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: trained-model
-          path: model.joblib
-          
-      - name: Download model artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: trained-model
-          
-      - name: Run latency test on saved model
-        run: |
-          PYTHONPATH=. pytest it/latency_check.py --capture=tee-sys
-          
-      - name: Commit updated model to main (trigger Render deploy)
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git pull origin main
-          git add model.joblib
-          git commit -m "CD: update model artifact" || echo "Nothing to commit"
-          git push origin main
