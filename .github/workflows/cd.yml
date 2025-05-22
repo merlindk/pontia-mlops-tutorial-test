@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Generate RUN_ID
+        run: echo "RUN_ID=run-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
+      
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -37,6 +40,12 @@ jobs:
           AZURE_STORAGE_CONNECTION_STRING: ${{secrets.AZURE_STORAGE_CONNECTION_STRING}}
           EXPERIMENT_NAME: ${{vars.EXPERIMENT_NAME}}
           MLFLOW_URL: ${{vars.MLFLOW_URL}}
+          MODEL_NAME: "test_model"
         run: |
           python src/train.py
+          
+      - name: Run model tests
+        run: python model_tests/test_model.py
 
+      - name: Register model in MLflow
+        run: python scripts/register_model.py
