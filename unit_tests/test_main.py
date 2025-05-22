@@ -1,15 +1,16 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from main import main
+from src.main import main
+import mlflow
 
-@patch("main.load_data")
-@patch("main.preprocess_data")
-@patch("main.train_model")
-@patch("main.evaluate")
-@patch("main.joblib.dump")
-@patch("main.mlflow.start_run")
-@patch("main.mlflow.set_tracking_uri")
-@patch("main.mlflow.set_experiment")
+@patch("src.main.load_data")
+@patch("src.main.preprocess_data")
+@patch("src.main.train_model")
+@patch("src.main.evaluate")
+@patch("src.main.joblib.dump")
+@patch("src.main.mlflow.start_run")
+@patch("src.main.mlflow.set_tracking_uri")
+@patch("src.main.mlflow.set_experiment")
 def test_main_pipeline(
     mock_set_experiment,
     mock_set_uri,
@@ -27,6 +28,8 @@ def test_main_pipeline(
     )
     mock_train_model.return_value = MagicMock()
     mock_start_run.return_value.__enter__.return_value = MagicMock()
+
+    mlflow.sklearn.autolog(disable=True)
 
     # Run main
     main()

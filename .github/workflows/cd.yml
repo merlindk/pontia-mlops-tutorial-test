@@ -41,7 +41,7 @@ jobs:
       
       - name: Train and save model
         run: |
-          python src/train.py
+          python src/main.py
           
       - name: Run model tests
         run: python model_tests/test_model.py

@@ -5,10 +5,9 @@ import joblib
 import mlflow
 import mlflow.sklearn
 from pathlib import Path
-from datetime import datetime
-from src.data_loader import load_data, preprocess_data
-from src.evaluate import evaluate
-from src.model import train_model
+from data_loader import load_data, preprocess_data
+from evaluate import evaluate
+from model import train_model
 import os
 
 # Configurar logging (consola + archivo)
@@ -24,10 +23,6 @@ logger=logging.getLogger("adult-income")
 
 run_name = os.getenv("RUN_ID", "run_id_not_found")
 
-# MLflow config
-mlflow.set_tracking_uri(os.environ['MLFLOW_URL'])
-mlflow.set_experiment(os.environ['EXPERIMENT_NAME'])
-
 # Paths
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data" / "raw"
@@ -35,9 +30,12 @@ MODEL_DIR = PROJECT_ROOT / "models"
 MODEL_DIR.mkdir(exist_ok=True)
 
 def main():
+    # MLflow config
+    mlflow.set_tracking_uri(os.getenv('MLFLOW_URL', 'http://localhost:5000'))
+    mlflow.set_experiment(os.getenv('EXPERIMENT_NAME', 'experiment_name_not_found'))
+
     script_start = time.time()
     logger.info(f"System info: {platform.platform()}")
-    print(run_name)
     train_df, test_df = load_data(DATA_DIR / "adult.data", DATA_DIR / "adult.test")
     X_train, X_test, y_train, y_test, scaler, encoders = preprocess_data(train_df, test_df)
     mlflow.autolog()
