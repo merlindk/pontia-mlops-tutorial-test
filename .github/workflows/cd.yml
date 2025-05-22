@@ -43,6 +43,9 @@ jobs:
         run: |
           python src/main.py
           
+      - name: Save run ID to env
+        run: echo "RUN_ID=$(cat run_id.txt)" >> $GITHUB_ENV
+          
       - name: Run model tests
         run: python model_tests/test_model.py
 

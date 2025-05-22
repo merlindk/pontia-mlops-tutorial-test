@@ -21,7 +21,7 @@ logging.basicConfig(
 )
 logger=logging.getLogger("adult-income")
 
-run_name = os.getenv("RUN_ID", "run_id_not_found")
+run_name = os.getenv("RUN_NAME", "run_name_not_found")
 
 # Paths
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -39,7 +39,7 @@ def main():
     train_df, test_df = load_data(DATA_DIR / "adult.data", DATA_DIR / "adult.test")
     X_train, X_test, y_train, y_test, scaler, encoders = preprocess_data(train_df, test_df)
     mlflow.autolog()
-    with mlflow.start_run(run_name=run_name):
+    with mlflow.start_run(run_name=run_name) as run:
         start_time = time.time()
         model = train_model(X_train, y_train)
         elapsed = time.time() - start_time
@@ -53,6 +53,8 @@ def main():
         # Save and log scaler and encoders
         joblib.dump(scaler, MODEL_DIR / "scaler.pkl")
         joblib.dump(encoders, MODEL_DIR / "encoders.pkl")
+        with open("run_id.txt", "w") as f:
+            f.write(run.info.run_id)
 
     total_time = time.time() - script_start
     logger.info(f"Script completed in {total_time:.2f} seconds.")
