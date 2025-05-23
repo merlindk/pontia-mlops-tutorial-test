@@ -2,10 +2,10 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY deployment/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY deployment/app ./app
+COPY app ./app
 
 ENV MODEL_URI="models:/test_model@champion"
 

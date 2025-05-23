@@ -1,4 +1,4 @@
-name: CD
+name: Build Model
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    if: "!contains(github.event.head_commit.message, 'CD: update model artifact')"
+    if: "!contains(github.event.head_commit.message, 'NO_AB')"
     runs-on: ubuntu-latest
     env:
       AZURE_STORAGE_CONNECTION_STRING: ${{secrets.AZURE_STORAGE_CONNECTION_STRING}}
