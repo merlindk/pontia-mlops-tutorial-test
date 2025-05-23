@@ -49,6 +49,9 @@ jobs:
             --environment-variables MODEL_URI=models:/${{ env.MODEL_NAME }}@${{ env.MODEL_ALIAS }} \
             --dns-name-label ${{ env.AZURE_CONTAINER_NAME }}-${{ github.run_id }} \
             --ports 8080 \
+            --os-type Linux \
+            --cpu 0.5 \
+            --memory 1.0 \
             --location ${{ env.AZURE_REGION }}
 
       - name: Wait for container to start
