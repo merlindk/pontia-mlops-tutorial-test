@@ -3,8 +3,15 @@ import mlflow.pyfunc
 import pandas as pd
 import os
 from contextlib import asynccontextmanager
+import time
+import logging
+from fastapi.responses import PlainTextResponse
+
+metrics = {"total_predictions": 0}
 
 model = None
+
+logging.basicConfig(level=logging.INFO)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,7 +31,16 @@ def health():
 
 @app.post("/predict")
 async def predict(request: Request):
+    start = time.time()
     data = await request.json()
     df = pd.DataFrame([data])
     prediction = model.predict(df)
+    duration = time.time() - start
+    metrics["total_predictions"] += 1
+    logging.info(f"Prediction: input={data}, output={prediction.tolist()}, time={duration:.3f}s")
+    
     return {"prediction": prediction.tolist()}
+
+@app.get("/metrics", response_class=PlainTextResponse)
+def metrics_endpoint():
+    return f'total_predictions {metrics["total_predictions"]}\n'
