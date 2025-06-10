@@ -1,7 +1,0 @@
-fastapi
-uvicorn
-mlflow
-pandas
-scikit-learn
-azure-storage-blob
-azure-identity
