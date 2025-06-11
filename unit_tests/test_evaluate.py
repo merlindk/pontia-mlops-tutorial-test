@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from src.evaluate import evaluate
+from evaluate import evaluate
 
 def test_evaluate_logs(caplog):
     # Create dummy data
