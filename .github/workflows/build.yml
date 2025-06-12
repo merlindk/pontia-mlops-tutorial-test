@@ -1,6 +1,7 @@
 name: Build Model
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -11,23 +12,39 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:      
+    env:
+      AZURE_STORAGE_CONNECTION_STRING: ${{secrets.AZURE_STORAGE_CONNECTION_STRING}}
+      EXPERIMENT_NAME: ${{vars.EXPERIMENT_NAME}}
+      MLFLOW_URL: ${{vars.MLFLOW_URL}}
+      MODEL_NAME: ${{vars.MODEL_NAME}}
+    steps:
+      - name: Generate RUN_NAME
+        run: echo "RUN_NAME=run-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
+        
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '2.6'
+          python-version: '3.10'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install scikit-learn pandas joblib mlflow azure-storage-blob azure-identity pytest mlflow-skinny numpy
-      
+          pip install -r requirements.txt
+          
+      - name: Download Adult dataset
+        run: |
+          curl -o data/raw/adult.data https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data
+          curl -o data/raw/adult.test https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test
+          
       - name: Train and save model
         run: |
           python src/main.py
+          
+      - name: Save run ID to env
+        run: echo "RUN_ID=$(cat run_id.txt)" >> $GITHUB_ENV
           
       - name: Run model tests
         run: python model_tests/test_model.py
