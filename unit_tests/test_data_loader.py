@@ -4,7 +4,7 @@ import numpy as np
 from io import StringIO
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
-from src.data_loader import load_data, preprocess_data  # Update this import path as needed
+from data_loader import load_data, preprocess_data  # Update this import path as needed
 
 @pytest.fixture
 def sample_csv_data():
