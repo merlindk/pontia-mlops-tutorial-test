@@ -1,0 +1,12 @@
+name: Deploy Model
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set MODEL_URI environment variable
+        run: echo "test"
