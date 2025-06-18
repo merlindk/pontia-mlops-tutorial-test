@@ -1,0 +1,60 @@
+name: Deploy Model
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      MODEL_NAME: ${{ vars.MODEL_NAME }}
+      MODEL_ALIAS: champion
+      AZURE_CONTAINER_NAME: model-api-test
+      IMAGE_NAME: model-api-test
+      AZURE_REGION: eastus
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{secrets.AZURE_CREDENTIALS}}
+
+      - name: Log in to Azure Container Registry
+        run: az acr login --name ${{secrets.ACR_NAME}}
+
+      - name: Set MODEL_URI environment variable
+        run: echo "MODEL_URI=models:/${{env.MODEL_NAME}}@$${{env.MODEL_ALIAS}}" >> $GITHUB_ENV
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{secrets.ACR_NAME}}.azurecr.io/${{env.IMAGE_NAME}} ./deployment
+
+      - name: Push Docker image to ACR
+        run: |
+          docker push ${{secrets.ACR_NAME}}.azurecr.io/${{env.IMAGE_NAME}}
+
+      - name: Deploy to Azure Container Instances
+        run: |
+          az container create \
+          --name ${{env.AZURE_CONTAINER_NAME}} \
+          --image  ${{secrets.ACR_NAME}}.azurecr.io/${{env.IMAGE_NAME}}:latest \
+          --resource-group ${{secrets.AZURE_RESOURCE_GROUP}} \
+          --registry-login-server ${{ secrets.ACR_NAME }}.azurecr.io \
+          --registry-username ${{ secrets.ACR_USERNAME }} \
+          --registry-password ${{ secrets.ACR_PASSWORD }} \
+          --environment-variables MODEL_URI="models:/${{ env.MODEL_NAME }}@${{ env.MODEL_ALIAS }}" MLFLOW_TRACKING_URI="${{ vars.MLFLOW_URL }}" AZURE_STORAGE_CONNECTION_STRING="${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+          --dns-name-label ${{ env.AZURE_CONTAINER_NAME }}-${{ github.run_id }} \
+          --ports 8080 \
+          --os-type Linux \
+          --cpu 0.5 \
+          --memory 1.0 \
+          --location ${{ env.AZURE_REGION }}
+
+      - name: Wait for container to start
+        run: sleep 30
+
+      - name: Probe REST API
+        run: |
+          curl --fail http://${{ env.AZURE_CONTAINER_NAME }}-${{ github.run_id }}.${{ env.AZURE_REGION }}.azurecontainer.io:8080/health
