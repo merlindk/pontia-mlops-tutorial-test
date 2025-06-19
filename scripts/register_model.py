@@ -19,9 +19,10 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 MODEL_DIR = PROJECT_ROOT / "models"
 model_artifact_path = MODEL_DIR / "model.pkl"
 print(model_artifact_path)
+print(run_id)
 # Register the model
 result = mlflow.register_model(
-    model_uri=f"runs:/{run_id}/{model_artifact_path}",
+    model_uri=f"runs:/{run_id}/model",
     name=model_name
 )
 
