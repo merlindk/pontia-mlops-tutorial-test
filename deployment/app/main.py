@@ -6,16 +6,19 @@ from contextlib import asynccontextmanager
 import time
 import logging
 from fastapi.responses import PlainTextResponse
+import joblib
 
 metrics = {"total_predictions": 0}
 
 model = None
+scaler = None
+encoders = None
 
 logging.basicConfig(level=logging.INFO)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global model
+    global model, scaler, encoders
     mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000"))
     model_uri = os.getenv("MODEL_URI")
     if not model_uri:
@@ -34,8 +37,8 @@ async def lifespan(app: FastAPI):
         raise ValueError("Unsupported MODEL_URI format.")
 
     # Step 2: Download artifacts from that run
-    scaler_path = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path="scaler.pkl")
-    encoders_path = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path="encoders.pkl")
+    scaler_path = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path="preprocessing/scaler.pkl")
+    encoders_path = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path="preprocessing/encoders.pkl")
 
     # Step 3: Load them into memory
     scaler = joblib.load(scaler_path)
